@@ -1,0 +1,10 @@
+node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.DS_Store
+
+# 環境変数（.env.example だけは追跡する）
+.env*
+!.env.example
