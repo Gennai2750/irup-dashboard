@@ -4,7 +4,7 @@ import * as stylex from '@stylexjs/stylex';
 import { colors, fonts } from '@/app/tokens.stylex';
 import { Card } from '@/components/ui/Card';
 import { ChoiceButtons } from '@/components/ui/ChoiceButtons';
-import { RATE_OPTIONS } from '@/lib/constants';
+import { CURRENT_RATE_OPTIONS } from '@/lib/constants';
 import { RateNote } from './RateNote';
 
 const styles = stylex.create({
@@ -24,7 +24,7 @@ export function Block02CurrentRate({
       <p {...stylex.props(styles.q)}>いまの月額単価（5万円刻み）</p>
       <ChoiceButtons
         name="現在の単価"
-        options={RATE_OPTIONS.map((v) => ({ value: v, label: `${v}万` }))}
+        options={CURRENT_RATE_OPTIONS.map((v) => ({ value: v, label: `${v}万` }))}
         value={currentRate}
         onChange={onCurrentRate}
       />

@@ -67,6 +67,15 @@ export const RATE_OPTIONS = [
 export const RATE_STEP = 5;
 
 /**
+ * 現在の単価として選べる上限（万円）。
+ * 目標側は RATE_OPTIONS のまま（上に伸ばす余地を残すため、現在より高いところまで選べる）。
+ */
+export const CURRENT_RATE_MAX = 100;
+
+/** 現在の単価の選択肢 */
+export const CURRENT_RATE_OPTIONS = RATE_OPTIONS.filter((v) => v <= CURRENT_RATE_MAX);
+
+/**
  * 担当レイヤー。
  * 調査では「単価差は経験年数より担当レイヤー（運用／構築／設計／アーキテクト）で開く」とされる。
  * maxRate は、そのレイヤーに対応する単価帯の上限（万円／月）。
