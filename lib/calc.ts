@@ -1,5 +1,5 @@
 import {
-  AI_HOURS_PER_STEP,
+  AI_DAILY_MINUTES,
   AI_LEVELS,
   DAYS_PER_MONTH,
   DAYS_PER_WEEK,
@@ -7,8 +7,8 @@ import {
   LAYERS,
   LAYER_ORDER,
   RATE_STEP,
-  ROLE_SKILLS,
   REQUIRE_TEACH_BELOW_TARGET,
+  ROLE_SKILLS,
   SKILL_LEVELS,
   SOFT_SKILLS,
   TRIED_PROGRESS,
@@ -37,8 +37,8 @@ export type FormState = {
   holidayFree: number;
   /** 週の休日数 */
   holidayPerWeek: number;
-  /** 1日あたり学習に使う時間 */
-  dailyStudy: number;
+  /** いつまでに達成したいか（ヶ月後） */
+  deadlineMonths: number;
   name: string;
 };
 
@@ -52,7 +52,7 @@ export const initialState: FormState = {
   weekdayFree: 3,
   holidayFree: 6,
   holidayPerWeek: 2,
-  dailyStudy: 1,
+  deadlineMonths: 24,
   name: '',
 };
 
@@ -65,6 +65,9 @@ export const clampHours = (raw: number): number => {
   if (!Number.isFinite(raw)) return 0;
   return Math.min(HOURS_PER_DAY, Math.max(0, raw));
 };
+
+/** AIキャッチアップに毎日あてる時間（時間） */
+export const AI_DAILY_HOURS = AI_DAILY_MINUTES / 60;
 
 /** 単価（万円／月）から担当レイヤーを引く */
 export function layerOfRate(rate: number): LayerKey {
@@ -115,15 +118,10 @@ export const remainingHours = (
 /* ------------------------------------------------------------------ */
 
 export type GapItem = SkillItem & {
-  /** いまの理解度（未チェックなら undefined） */
   level: SkillLevel | undefined;
-  /** 求められる到達レベル */
   requiredLevel: 'use' | 'teach';
-  /** その到達レベルに必要な時間 */
   required: number;
-  /** すでに投じ終えた時間 */
   progress: number;
-  /** 残っている学習時間 */
   remain: number;
   /** ここまでの累積学習時間 */
   cumulative: number;
@@ -132,47 +130,50 @@ export type GapItem = SkillItem & {
 export type Derived = {
   currentLayer: LayerKey;
   targetLayer: LayerKey;
-  /** 単価を何段（5万円刻み）上げようとしているか */
   rateSteps: number;
-  /** 目標が現在と同じか下回っている */
   goalNotHigher: boolean;
 
-  /** 目標レイヤーで求められる技術項目 */
   requiredSkills: readonly SkillItem[];
-  /** そのうち学習時間が残っているもの（学習の順路） */
   gapSkills: GapItem[];
-  /** 技術以外の能力の不足分 */
   gapSoftSkills: GapItem[];
 
   techHours: number;
   softHours: number;
-  /** AI活用を目標レイヤーの水準まで上げるための時間 */
-  aiHours: number;
-  aiGapSteps: number;
-  /** 目標レイヤーで求められるAI活用レベル */
-  requiredAiLevel: number;
+  /** 期限までにやりきる学習時間の合計（AIキャッチアップは含まない） */
   totalHours: number;
+  alreadyThere: boolean;
 
-  /** 月の空き時間 */
+  /** 目標レイヤーで求められるAI活用レベルと、いまとの差 */
+  requiredAiLevel: number;
+  aiGapSteps: number;
+
   monthlyFree: number;
-  /** 月の学習時間（1日あたり × 30.45日） */
-  monthlyStudy: number;
-  /** 学習時間が空き時間の何％か（空き時間0なら null） */
-  studyShareOfFree: number | null;
-  /** 学習時間が空き時間を超えている */
-  overCapacity: boolean;
   weekdayDaysPerMonth: number;
   holidayDaysPerMonth: number;
+  /** 1日あたりの空き時間（月の空き時間を30.45日でならしたもの） */
+  dailyFree: number;
 
-  /** 到達までの月数（学習時間0なら null。不足0なら0） */
-  months: number | null;
-  /** すでに条件を満たしている */
-  alreadyThere: boolean;
+  /** いつまでに達成したいか（ヶ月） */
+  deadlineMonths: number;
+  /** 毎日のAIキャッチアップ（時間） */
+  aiDaily: number;
+  /** 期限に間に合わせるために、1日あたり必要な技術学習の時間 */
+  dailyStudy: number;
+  /** AIキャッチアップを足した1日あたりの合計 */
+  dailyTotal: number;
+  /** 1日の合計が空き時間の何％か（空き時間0なら null） */
+  dailyShareOfFree: number | null;
+  /** 空き時間に収まるか */
+  feasible: boolean;
+  /** 収まらない場合、1日あたり何時間足りないか */
+  overBy: number;
+  /** いまの空き時間で間に合わせられる最短の期限（ヶ月）。AI分だけで埋まるなら null */
+  minMonthsWithinFree: number | null;
 };
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 
-/** レイヤーの浅い順 → 残り時間の短い順。学ぶ順路として自然な並びにする */
+/** レイヤーの浅い順 → 残り時間の短い順 */
 function sortForRoadmap(a: GapItem, b: GapItem): number {
   const d = LAYER_ORDER[a.layer] - LAYER_ORDER[b.layer];
   if (d !== 0) return d;
@@ -212,29 +213,34 @@ function buildGap(
 export function derive(s: FormState): Derived {
   const currentLayer = layerOfRate(s.currentRate);
   const targetLayer = layerOfRate(s.goalRate);
-  const goalNotHigher = s.goalRate <= s.currentRate;
 
   const tech = buildGap(ROLE_SKILLS[s.role], s.skills, targetLayer);
   const soft = buildGap(SOFT_SKILLS, s.softSkills, targetLayer);
+  const totalHours = tech.hours + soft.hours;
 
   const requiredAiLevel = layerByKey(targetLayer).aiLevel;
-  const aiGapSteps = Math.max(0, Math.min(AI_LEVELS.length, requiredAiLevel) - s.aiLevel);
-  const aiHours = aiGapSteps * AI_HOURS_PER_STEP;
-
-  const totalHours = tech.hours + soft.hours + aiHours;
 
   const holidayDaysPerMonth = s.holidayPerWeek * WEEKS_PER_MONTH;
   const weekdayDaysPerMonth = (DAYS_PER_WEEK - s.holidayPerWeek) * WEEKS_PER_MONTH;
   const monthlyFree =
     clampHours(s.weekdayFree) * weekdayDaysPerMonth +
     clampHours(s.holidayFree) * holidayDaysPerMonth;
-  const monthlyStudy = clampHours(s.dailyStudy) * DAYS_PER_MONTH;
+  const dailyFree = monthlyFree / DAYS_PER_MONTH;
+
+  const months = Math.max(1, s.deadlineMonths);
+  const dailyStudy = totalHours / (months * DAYS_PER_MONTH);
+  const dailyTotal = AI_DAILY_HOURS + dailyStudy;
+
+  // AIキャッチアップを引いた残りを学習にあてた場合、何ヶ月で終わるか
+  const studyCapacity = dailyFree - AI_DAILY_HOURS;
+  const minMonthsWithinFree =
+    totalHours === 0 ? 0 : studyCapacity > 0 ? totalHours / (studyCapacity * DAYS_PER_MONTH) : null;
 
   return {
     currentLayer,
     targetLayer,
     rateSteps: Math.max(0, Math.round((s.goalRate - s.currentRate) / RATE_STEP)),
-    goalNotHigher,
+    goalNotHigher: s.goalRate <= s.currentRate,
 
     requiredSkills: tech.required,
     gapSkills: tech.gap,
@@ -242,37 +248,42 @@ export function derive(s: FormState): Derived {
 
     techHours: tech.hours,
     softHours: soft.hours,
-    aiHours,
-    aiGapSteps,
-    requiredAiLevel,
     totalHours,
+    alreadyThere: totalHours === 0,
+
+    requiredAiLevel,
+    aiGapSteps: Math.max(0, Math.min(AI_LEVELS.length, requiredAiLevel) - s.aiLevel),
 
     monthlyFree,
-    monthlyStudy,
-    studyShareOfFree: monthlyFree > 0 ? (monthlyStudy / monthlyFree) * 100 : null,
-    overCapacity: monthlyStudy > monthlyFree,
     weekdayDaysPerMonth,
     holidayDaysPerMonth,
+    dailyFree,
 
-    months: monthlyStudy > 0 ? totalHours / monthlyStudy : null,
-    alreadyThere: totalHours === 0,
+    deadlineMonths: months,
+    aiDaily: AI_DAILY_HOURS,
+    dailyStudy,
+    dailyTotal,
+    dailyShareOfFree: monthlyFree > 0 ? (dailyTotal / dailyFree) * 100 : null,
+    feasible: dailyTotal <= dailyFree,
+    overBy: Math.max(0, dailyTotal - dailyFree),
+    minMonthsWithinFree,
   };
 }
 
 /* ------------------------------------------------------------------ */
-/* 到達時期                                                            */
+/* 期限                                                                */
 /* ------------------------------------------------------------------ */
 
-/** その月数で到達する年月。月数は繰り上げて数える */
-export function arrivalDate(base: Date, months: number): Date {
+/** その月数後の年月 */
+export function targetDate(base: Date, months: number): Date {
   const d = new Date(base.getFullYear(), base.getMonth(), 1);
   d.setMonth(d.getMonth() + Math.ceil(months));
   return d;
 }
 
-/** 1日あたり◯時間で学んだ場合の月数（学習時間0なら null） */
-export const monthsAtDailyStudy = (totalHours: number, dailyStudy: number): number | null =>
-  dailyStudy > 0 ? totalHours / (dailyStudy * DAYS_PER_MONTH) : null;
+/** その期限に間に合わせるために、1日あたり必要な技術学習の時間 */
+export const dailyStudyForMonths = (totalHours: number, months: number): number =>
+  months > 0 ? totalHours / (months * DAYS_PER_MONTH) : Number.POSITIVE_INFINITY;
 
 /** その時間が月の空き時間の何％か（空き時間0なら null） */
 export const shareOfFree = (hours: number, monthlyFree: number): number | null =>

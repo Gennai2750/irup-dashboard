@@ -3,30 +3,27 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors, fonts, shape } from '@/app/tokens.stylex';
 import type { Derived, FormState } from '@/lib/calc';
-import { arrivalDate } from '@/lib/calc';
-import { hours, monthCount, n1, ym } from '@/lib/format';
+import { targetDate } from '@/lib/calc';
+import { hm, hours, n0, n1, span, ym } from '@/lib/format';
 
 const styles = stylex.create({
   box: {
-    display: 'grid',
-    gridTemplateColumns: { default: '1fr auto', '@media (max-width: 900px)': '1fr' },
-    gap: '20px',
-    alignItems: 'center',
     backgroundColor: colors.cardBg,
     borderWidth: '2px',
     borderStyle: 'solid',
     borderColor: colors.accent,
     borderRadius: shape.radius,
     boxShadow: shape.shadow,
-    padding: { default: '22px 24px', '@media (max-width: 640px)': '18px 16px' },
+    padding: { default: '24px 26px', '@media (max-width: 640px)': '18px 16px' },
   },
-  sentence: {
+  head: {
     fontFamily: fonts.serif,
     fontSize: { default: '20px', '@media (max-width: 640px)': '17px' },
     fontWeight: 600,
     lineHeight: 1.7,
     color: colors.text,
     margin: 0,
+    marginBottom: '18px',
   },
   num: {
     fontFamily: fonts.mono,
@@ -34,101 +31,193 @@ const styles = stylex.create({
     color: colors.accent,
     fontWeight: 700,
   },
-  stats: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    borderLeftWidth: { default: '1px', '@media (max-width: 900px)': 0 },
-    borderLeftStyle: 'solid',
-    borderLeftColor: colors.border,
-    borderTopWidth: { default: 0, '@media (max-width: 900px)': '1px' },
+  plan: {
+    borderTopWidth: '1px',
     borderTopStyle: 'solid',
     borderTopColor: colors.border,
-    paddingLeft: { default: '20px', '@media (max-width: 900px)': '0' },
-    paddingTop: { default: '0', '@media (max-width: 900px)': '16px' },
+    paddingTop: '16px',
   },
-  stat: { paddingLeft: '14px', paddingRight: '14px', minWidth: '104px' },
-  statLabel: {
-    display: 'block',
-    fontFamily: fonts.sans,
-    fontSize: '11.5px',
-    color: colors.textMuted,
-    marginBottom: '5px',
-    whiteSpace: 'nowrap',
+  row: {
+    display: 'grid',
+    gridTemplateColumns: { default: 'auto 1fr', '@media (max-width: 560px)': '1fr' },
+    alignItems: 'baseline',
+    gap: '14px',
+    paddingTop: '9px',
+    paddingBottom: '9px',
   },
-  statValue: {
+  amount: {
     fontFamily: fonts.mono,
     fontVariantNumeric: 'tabular-nums',
     fontSize: '24px',
     fontWeight: 700,
-    color: colors.text,
-    lineHeight: 1,
+    color: colors.accent,
+    whiteSpace: 'nowrap',
+    minWidth: '128px',
   },
-  statUnit: { fontFamily: fonts.sans, fontSize: '12px', color: colors.textMuted, marginLeft: '2px' },
-  accentValue: { color: colors.accent },
+  what: { fontFamily: fonts.sans, fontSize: '14px', color: colors.text, lineHeight: 1.7 },
+  sub: { fontFamily: fonts.sans, fontSize: '11.5px', color: colors.textFaint, marginLeft: '8px' },
+  totalRow: {
+    display: 'grid',
+    gridTemplateColumns: { default: 'auto 1fr', '@media (max-width: 560px)': '1fr' },
+    alignItems: 'baseline',
+    gap: '14px',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: colors.borderStrong,
+    marginTop: '6px',
+    paddingTop: '12px',
+  },
+  totalAmount: {
+    fontFamily: fonts.mono,
+    fontVariantNumeric: 'tabular-nums',
+    fontSize: '26px',
+    fontWeight: 700,
+    color: colors.text,
+    whiteSpace: 'nowrap',
+    minWidth: '128px',
+  },
+  ok: {
+    fontFamily: fonts.sans,
+    fontSize: '13px',
+    color: colors.textMuted,
+  },
+  ng: {
+    fontFamily: fonts.sans,
+    fontSize: '13px',
+    lineHeight: 1.9,
+    color: colors.accent,
+    marginTop: '14px',
+    padding: '11px 13px',
+    backgroundColor: colors.accentWeak,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: colors.accentBorder,
+    borderRadius: shape.radiusSm,
+  },
+  next: {
+    marginTop: '18px',
+    borderTopWidth: '1px',
+    borderTopStyle: 'solid',
+    borderTopColor: colors.border,
+    paddingTop: '14px',
+  },
+  nextHead: {
+    fontFamily: fonts.serif,
+    fontSize: '13px',
+    fontWeight: 600,
+    color: colors.text,
+    marginBottom: '8px',
+  },
+  nextRow: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: '10px',
+    fontFamily: fonts.sans,
+    fontSize: '13px',
+    color: colors.text,
+    paddingTop: '5px',
+    paddingBottom: '5px',
+  },
+  nextNo: {
+    fontFamily: fonts.mono,
+    fontVariantNumeric: 'tabular-nums',
+    fontSize: '11px',
+    color: colors.textFaint,
+  },
+  nextDays: {
+    fontFamily: fonts.mono,
+    fontVariantNumeric: 'tabular-nums',
+    fontSize: '11.5px',
+    color: colors.textMuted,
+    marginLeft: 'auto',
+    whiteSpace: 'nowrap',
+  },
 });
 
-export function Verdict({
-  s,
-  d,
-  today,
-}: {
-  s: FormState;
-  d: Derived;
-  today: Date | null;
-}) {
-  const arrival = today !== null && d.months !== null ? arrivalDate(today, d.months) : null;
-  const gapCount = d.gapSkills.length + d.gapSoftSkills.length + (d.aiGapSteps > 0 ? 1 : 0);
+export function Verdict({ s, d, today }: { s: FormState; d: Derived; today: Date | null }) {
+  const due = today ? targetDate(today, d.deadlineMonths) : null;
 
-  return (
-    <div {...stylex.props(styles.box)}>
-      {d.goalNotHigher ? (
-        <p {...stylex.props(styles.sentence)}>
+  if (d.goalNotHigher) {
+    return (
+      <div {...stylex.props(styles.box)}>
+        <p {...stylex.props(styles.head)}>
           目標が現在の単価と同じか、それより低くなっています。ヒアリングの 07
           で、上の単価を選んでください。
         </p>
-      ) : d.alreadyThere ? (
-        <p {...stylex.props(styles.sentence)}>
-          {`月${s.goalRate}万円の水準で求められる項目は、すでに揃っています。`}
-        </p>
-      ) : d.months === null ? (
-        <p {...stylex.props(styles.sentence)}>
-          {`月${s.currentRate}万円から月${s.goalRate}万円まで、あと`}
-          <span {...stylex.props(styles.num)}>{hours(d.totalHours)}</span>
-          {'時間の学習が残っています。1日あたりの学習時間を入れると、到達時期が出ます。'}
-        </p>
-      ) : (
-        <p {...stylex.props(styles.sentence)}>
-          {`月${s.currentRate}万円から月${s.goalRate}万円まで、残り`}
-          <span {...stylex.props(styles.num)}>{gapCount}</span>
-          {'項目・'}
-          <span {...stylex.props(styles.num)}>{hours(d.totalHours)}</span>
-          {`時間。1日${n1(s.dailyStudy)}時間なら`}
-          <span {...stylex.props(styles.num)}>{monthCount(d.months)}</span>
-          {'ヶ月後'}
-          {arrival ? `、${ym(arrival)}に届きます。` : 'に届きます。'}
-        </p>
-      )}
+      </div>
+    );
+  }
 
-      <div {...stylex.props(styles.stats)}>
-        <div {...stylex.props(styles.stat)}>
-          <span {...stylex.props(styles.statLabel)}>残っている学習</span>
-          <span {...stylex.props(styles.statValue)}>{hours(d.totalHours)}</span>
-          <span {...stylex.props(styles.statUnit)}>h</span>
-        </div>
-        <div {...stylex.props(styles.stat)}>
-          <span {...stylex.props(styles.statLabel)}>到達までの月数</span>
-          <span {...stylex.props(styles.statValue, styles.accentValue)}>
-            {d.alreadyThere ? '0' : monthCount(d.months)}
+  const nexts = [...d.gapSkills, ...d.gapSoftSkills].slice(0, 3);
+
+  return (
+    <div {...stylex.props(styles.box)}>
+      <p {...stylex.props(styles.head)}>
+        {due ? <span {...stylex.props(styles.num)}>{ym(due)}</span> : null}
+        {due ? 'までに ' : ''}
+        <span {...stylex.props(styles.num)}>月{s.goalRate}万円</span>
+        {'へ。毎日これをやりましょう。'}
+      </p>
+
+      <div {...stylex.props(styles.plan)}>
+        <div {...stylex.props(styles.row)}>
+          <span {...stylex.props(styles.amount)}>毎日 {hm(d.aiDaily)}</span>
+          <span {...stylex.props(styles.what)}>
+            AIの最新情報のキャッチアップ
+            <span {...stylex.props(styles.sub)}>期限に関係なく、ずっと続ける</span>
           </span>
-          <span {...stylex.props(styles.statUnit)}>ヶ月</span>
         </div>
-        <div {...stylex.props(styles.stat)}>
-          <span {...stylex.props(styles.statLabel)}>到達時期</span>
-          <span {...stylex.props(styles.statValue)}>
-            {d.alreadyThere ? '達成' : arrival ? ym(arrival) : '—'}
+        <div {...stylex.props(styles.row)}>
+          <span {...stylex.props(styles.amount)}>毎日 {hm(d.dailyStudy)}</span>
+          <span {...stylex.props(styles.what)}>
+            {d.alreadyThere ? '技術の学習（必要な項目は揃っています）' : '技術と、技術以外の学習'}
+            {d.alreadyThere ? null : (
+              <span {...stylex.props(styles.sub)}>
+                残り {hours(d.totalHours)}h ÷ {span(d.deadlineMonths)}
+              </span>
+            )}
+          </span>
+        </div>
+        <div {...stylex.props(styles.totalRow)}>
+          <span {...stylex.props(styles.totalAmount)}>合計 {hm(d.dailyTotal)}</span>
+          <span {...stylex.props(styles.ok)}>
+            1日の空き時間 {n1(d.dailyFree)} 時間
+            {d.dailyShareOfFree === null ? '' : ` の ${n0(d.dailyShareOfFree)}％`}
           </span>
         </div>
       </div>
+
+      {!d.feasible ? (
+        <p {...stylex.props(styles.ng)}>
+          このペースは、いまの空き時間より1日 {hm(d.overBy)} 多くなります。
+          {d.minMonthsWithinFree !== null
+            ? `空き時間のなかでやりきるなら、期限は ${span(d.minMonthsWithinFree)}後（${
+                today ? ym(targetDate(today, d.minMonthsWithinFree)) : '—'
+              }）が最短です。`
+            : '空き時間がAIのキャッチアップだけで埋まってしまいます。まず空き時間を増やすところからです。'}
+        </p>
+      ) : null}
+
+      {nexts.length > 0 ? (
+        <div {...stylex.props(styles.next)}>
+          <p {...stylex.props(styles.nextHead)}>まず、この順で手をつけます</p>
+          {nexts.map((g, i) => (
+            <div key={g.name} {...stylex.props(styles.nextRow)}>
+              <span {...stylex.props(styles.nextNo)}>{i + 1}</span>
+              <span>
+                {g.name}
+                <span {...stylex.props(styles.sub)}>
+                  {g.requiredLevel === 'teach' ? '教えられるまで' : '扱えるまで'}
+                </span>
+              </span>
+              <span {...stylex.props(styles.nextDays)}>
+                残り {n1(g.remain)}h
+                {d.dailyStudy > 0 ? ` ／ 約${Math.ceil(g.remain / d.dailyStudy)}日` : ''}
+              </span>
+            </div>
+          ))}
+        </div>
+      ) : null}
     </div>
   );
 }

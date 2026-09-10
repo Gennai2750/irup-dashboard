@@ -42,7 +42,7 @@ export type Setters = {
   weekdayFree: (v: number) => void;
   holidayFree: (v: number) => void;
   holidayPerWeek: (v: number) => void;
-  dailyStudy: (v: number) => void;
+  deadlineMonths: (v: number) => void;
   name: (v: string) => void;
 };
 
@@ -50,11 +50,13 @@ export function HearingTab({
   state,
   derived,
   set,
+  today,
   onGoResult,
 }: {
   state: FormState;
   derived: Derived;
   set: Setters;
+  today: Date | null;
   onGoResult: () => void;
 }) {
   return (
@@ -88,11 +90,9 @@ export function HearingTab({
         goalRate={state.goalRate}
         onGoalRate={set.goalRate}
         goalNotHigher={derived.goalNotHigher}
-        dailyStudy={state.dailyStudy}
-        onDailyStudy={set.dailyStudy}
-        monthlyStudy={derived.monthlyStudy}
-        studyShareOfFree={derived.studyShareOfFree}
-        overCapacity={derived.overCapacity}
+        deadlineMonths={state.deadlineMonths}
+        onDeadlineMonths={set.deadlineMonths}
+        today={today}
         name={state.name}
         onName={set.name}
       />

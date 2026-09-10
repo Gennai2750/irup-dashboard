@@ -3,9 +3,9 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors, fonts, shape } from '@/app/tokens.stylex';
 import { Card } from '@/components/ui/Card';
-import { AI_HOURS_PER_STEP, DAYS_PER_MONTH, TRIED_PROGRESS } from '@/lib/constants';
-import { arrivalDate, type Derived, type FormState } from '@/lib/calc';
-import { hours, monthCount, n0, n1, span, ym } from '@/lib/format';
+import { AI_DAILY_MINUTES, DAYS_PER_MONTH, TRIED_PROGRESS } from '@/lib/constants';
+import { targetDate, type Derived, type FormState } from '@/lib/calc';
+import { hm, hours, n0, n1, span, ym } from '@/lib/format';
 
 const styles = stylex.create({
   cols: {
@@ -60,7 +60,13 @@ const styles = stylex.create({
   },
   sub: { fontFamily: fonts.sans, fontSize: '11px', color: colors.textFaint, marginLeft: '6px' },
   totalRow: { borderTopWidth: '1px', borderTopStyle: 'solid', borderTopColor: colors.borderStrong },
-  tdTotal: { fontFamily: fonts.sans, fontSize: '13px', fontWeight: 700, color: colors.text, paddingTop: '10px' },
+  tdTotal: {
+    fontFamily: fonts.sans,
+    fontSize: '13px',
+    fontWeight: 700,
+    color: colors.text,
+    paddingTop: '10px',
+  },
   tdTotalNum: {
     fontFamily: fonts.mono,
     fontVariantNumeric: 'tabular-nums',
@@ -70,11 +76,7 @@ const styles = stylex.create({
     textAlign: 'right',
     paddingTop: '10px',
   },
-  result: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
+  result: { display: 'flex', flexDirection: 'column', gap: '12px' },
   big: {
     padding: '16px 18px',
     backgroundColor: colors.subtleBg,
@@ -83,17 +85,28 @@ const styles = stylex.create({
     borderColor: colors.border,
     borderRadius: shape.radiusSm,
   },
-  bigLabel: { display: 'block', fontFamily: fonts.sans, fontSize: '12px', color: colors.textMuted, marginBottom: '6px' },
+  bigLabel: {
+    display: 'block',
+    fontFamily: fonts.sans,
+    fontSize: '12px',
+    color: colors.textMuted,
+    marginBottom: '6px',
+  },
   bigValue: {
     fontFamily: fonts.mono,
     fontVariantNumeric: 'tabular-nums',
-    fontSize: '32px',
+    fontSize: '30px',
     fontWeight: 700,
     lineHeight: 1,
     color: colors.accent,
   },
-  bigUnit: { fontFamily: fonts.sans, fontSize: '13px', color: colors.textMuted, marginLeft: '4px' },
-  bigSub: { display: 'block', fontFamily: fonts.sans, fontSize: '12px', color: colors.textMuted, marginTop: '8px' },
+  bigSub: {
+    display: 'block',
+    fontFamily: fonts.sans,
+    fontSize: '12px',
+    color: colors.textMuted,
+    marginTop: '8px',
+  },
   formula: {
     fontFamily: fonts.mono,
     fontSize: '12px',
@@ -147,26 +160,21 @@ export function Section02Estimate({
   d: Derived;
   today: Date | null;
 }) {
-  const arrival = today !== null && d.months !== null ? arrivalDate(today, d.months) : null;
+  const due = today ? targetDate(today, d.deadlineMonths) : null;
   const rows = [
     { label: '技術', note: `不足 ${d.gapSkills.length} 項目`, value: d.techHours },
     { label: '技術以外の能力', note: `不足 ${d.gapSoftSkills.length} 項目`, value: d.softHours },
-    {
-      label: 'AI活用',
-      note: d.aiGapSteps > 0 ? `レベル ${s.aiLevel} → ${d.requiredAiLevel}` : '必要水準に到達',
-      value: d.aiHours,
-    },
   ];
 
   return (
-    <Card no="02" title="到達までの試算">
+    <Card no="02" title="1日あたりの逆算">
       <div {...stylex.props(styles.cols)}>
         <div>
           <table {...stylex.props(styles.table)}>
             <thead>
               <tr>
                 <th {...stylex.props(styles.th)} scope="col">
-                  残っている学習
+                  期限までにやりきる学習
                 </th>
                 <th {...stylex.props(styles.thNum)} scope="col">
                   時間
@@ -191,36 +199,37 @@ export function Section02Estimate({
               </tr>
             </tfoot>
           </table>
+          <p {...stylex.props(styles.bigSub)}>
+            AIのキャッチアップはこの合計に入れていません。期限で終わる学習ではないため、
+            毎日 {AI_DAILY_MINUTES} 分の習慣として別に置いています。
+          </p>
         </div>
 
         <div {...stylex.props(styles.result)}>
           <div {...stylex.props(styles.big)}>
-            <span {...stylex.props(styles.bigLabel)}>到達までの期間</span>
-            <span {...stylex.props(styles.bigValue)}>
-              {d.alreadyThere ? '0' : monthCount(d.months)}
-            </span>
-            <span {...stylex.props(styles.bigUnit)}>ヶ月</span>
+            <span {...stylex.props(styles.bigLabel)}>1日あたり必要な学習時間</span>
+            <span {...stylex.props(styles.bigValue)}>{hm(d.dailyTotal)}</span>
             <span {...stylex.props(styles.bigSub)}>
-              {d.alreadyThere
-                ? '必要な項目は揃っています'
-                : arrival
-                  ? `${span(d.months)} ＝ ${ym(arrival)}`
-                  : '1日あたりの学習時間を入れてください'}
+              AIキャッチアップ {hm(d.aiDaily)} ＋ 技術など {hm(d.dailyStudy)}
+              {due ? ` ／ 期限 ${ym(due)}` : ''}
             </span>
           </div>
           <div {...stylex.props(styles.formula)}>
-            {hours(d.totalHours)} h ÷ ( {n1(s.dailyStudy)} h/日 × {DAYS_PER_MONTH.toFixed(2)} 日/月 ){'\n'}
-            ＝ {hours(d.totalHours)} h ÷ {n1(d.monthlyStudy)} h/月{'\n'}
-            ＝ {d.months === null ? '—' : n1(d.months)} ヶ月
+            {hours(d.totalHours)} h ÷ ( {d.deadlineMonths} ヶ月 × {DAYS_PER_MONTH.toFixed(2)} 日 ){'\n'}
+            ＝ 1日 {n1(d.dailyStudy)} h（技術など）{'\n'}
+            ＋ 1日 {n1(d.aiDaily)} h（AIキャッチアップ）{'\n'}
+            ＝ 1日 {n1(d.dailyTotal)} h
           </div>
-          {d.overCapacity ? (
+          {!d.feasible ? (
             <p {...stylex.props(styles.warn)}>
-              1日{n1(s.dailyStudy)}時間の学習は、入力した空き時間（月{n1(d.monthlyFree)}
-              時間）を超えています。
+              1日の空き時間 {n1(d.dailyFree)} 時間を {hm(d.overBy)} 超えています。
+              {d.minMonthsWithinFree !== null
+                ? `期限を ${span(d.minMonthsWithinFree)}後にすると収まります。`
+                : ''}
             </p>
-          ) : d.studyShareOfFree !== null ? (
+          ) : d.dailyShareOfFree !== null ? (
             <p {...stylex.props(styles.bigSub)}>
-              月{n1(d.monthlyStudy)}時間は、空き時間の {n0(d.studyShareOfFree)} ％です。
+              1日の空き時間 {n1(d.dailyFree)} 時間の {n0(d.dailyShareOfFree)} ％です。
             </p>
           ) : null}
         </div>
@@ -232,8 +241,7 @@ export function Section02Estimate({
           <li {...stylex.props(styles.li)}>
             各項目には「<strong>扱えるまで</strong>（手を動かして成果物を出せる）」と「
             <strong>教えられるまで</strong>（なぜそれを選んだかを説明でき、人に教えられる）」の
-            2 つの標準学習時間を持たせています。資格試験の学習時間の目安をもとに置いた値で、実測値ではありません
-            （例：AWS SAA は初心者50〜80時間・実務経験者20〜50時間とされる）。
+            2 つの標準学習時間を持たせています。資格試験の学習時間の目安をもとに置いた値で、実測値ではありません。
           </li>
           <li {...stylex.props(styles.li)}>
             <strong>目標レイヤーの技術は「扱える」まで、それより下のレイヤーの技術は「教えられる」まで</strong>
@@ -245,15 +253,17 @@ export function Section02Estimate({
             かじった＝扱えるまでの時間の {Math.round(TRIED_PROGRESS * 100)}％ ／ 未チェック＝0。
           </li>
           <li {...stylex.props(styles.li)}>
-            AI活用は、目標レイヤーで求められるレベルまで1段あたり
-            {AI_HOURS_PER_STEP}時間として数えています。
+            <strong>AI活用は「◯時間やれば終わり」の学習として数えていません。</strong>
+            知識だけを 3 年かけて積んでも、AI を使えなければ価値になりません。
+            毎日 {AI_DAILY_MINUTES} 分、最新情報に触れ続けることを前提に固定で置いています。
           </li>
           <li {...stylex.props(styles.li)}>
-            1ヶ月＝{DAYS_PER_MONTH.toFixed(2)}日（4.35週×7日）として計算しています。
+            1ヶ月＝{DAYS_PER_MONTH.toFixed(2)}日（4.35週×7日）。1日あたりの空き時間は、
+            月の空き時間をこの日数でならしたものです。
           </li>
           <li {...stylex.props(styles.li)}>
-            <strong>学習時間から単価が上がることを保証する計算ではありません。</strong>
-            「その水準で求められる項目を、いまのペースで学び終えるのはいつか」を出しているだけです。
+            <strong>学習すれば単価が上がることを保証する計算ではありません。</strong>
+            「その水準で求められる項目を、期限までに学び終えるには1日どれだけ要るか」を出しているだけです。
           </li>
         </ul>
       </div>

@@ -4,15 +4,14 @@ import * as stylex from '@stylexjs/stylex';
 import { colors, fonts, shape } from '@/app/tokens.stylex';
 import { Card } from '@/components/ui/Card';
 import { ChoiceButtons } from '@/components/ui/ChoiceButtons';
-import { HourInput } from '@/components/ui/HourInput';
-import { RATE_OPTIONS } from '@/lib/constants';
-import { n0, n1 } from '@/lib/format';
+import { DEADLINE_OPTIONS, RATE_OPTIONS } from '@/lib/constants';
+import { ym } from '@/lib/format';
+import { targetDate } from '@/lib/calc';
 import { RateNote } from './RateNote';
 
 const styles = stylex.create({
   q: { fontFamily: fonts.sans, fontSize: '14px', color: colors.text, marginBottom: '10px' },
   block: { marginTop: '22px' },
-  list: { borderTopWidth: '1px', borderTopStyle: 'dotted', borderTopColor: colors.border },
   warn: {
     fontFamily: fonts.sans,
     fontSize: '12.5px',
@@ -25,8 +24,26 @@ const styles = stylex.create({
     borderColor: colors.accentBorder,
     borderRadius: shape.radiusSm,
   },
-  share: { fontFamily: fonts.sans, fontSize: '12px', color: colors.textFaint, marginTop: '10px' },
-  num: { fontFamily: fonts.mono, fontVariantNumeric: 'tabular-nums', fontWeight: 500 },
+  when: {
+    display: 'flex',
+    alignItems: 'baseline',
+    gap: '8px',
+    marginTop: '12px',
+    padding: '12px 14px',
+    backgroundColor: colors.subtleBg,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: colors.border,
+    borderRadius: shape.radiusSm,
+  },
+  whenLabel: { fontFamily: fonts.sans, fontSize: '12px', color: colors.textMuted },
+  whenValue: {
+    fontFamily: fonts.mono,
+    fontVariantNumeric: 'tabular-nums',
+    fontSize: '20px',
+    fontWeight: 700,
+    color: colors.accent,
+  },
   nameRow: { display: 'flex', flexDirection: 'column', gap: '8px', maxWidth: '360px' },
   input: {
     fontFamily: fonts.sans,
@@ -47,28 +64,25 @@ export function Block07Goal({
   goalRate,
   onGoalRate,
   goalNotHigher,
-  dailyStudy,
-  onDailyStudy,
-  monthlyStudy,
-  studyShareOfFree,
-  overCapacity,
+  deadlineMonths,
+  onDeadlineMonths,
+  today,
   name,
   onName,
 }: {
   goalRate: number;
   onGoalRate: (v: number) => void;
   goalNotHigher: boolean;
-  dailyStudy: number;
-  onDailyStudy: (v: number) => void;
-  monthlyStudy: number;
-  studyShareOfFree: number | null;
-  overCapacity: boolean;
+  deadlineMonths: number;
+  onDeadlineMonths: (v: number) => void;
+  today: Date | null;
   name: string;
   onName: (v: string) => void;
 }) {
+  const due = today ? targetDate(today, deadlineMonths) : null;
   return (
-    <Card no="07" title="単価を幾らまで上げたいですか">
-      <p {...stylex.props(styles.q)}>目標の月額単価（5万円刻み）</p>
+    <Card no="07" title="目標">
+      <p {...stylex.props(styles.q)}>単価を幾らまで上げたいですか（5万円刻み）</p>
       <ChoiceButtons
         name="目標の単価"
         options={RATE_OPTIONS.map((v) => ({ value: v, label: `${v}万` }))}
@@ -83,21 +97,20 @@ export function Block07Goal({
       ) : null}
 
       <div {...stylex.props(styles.block)}>
-        <p {...stylex.props(styles.q)}>1日あたり、学習にどれくらい使いますか</p>
-        <div {...stylex.props(styles.list)}>
-          <HourInput label="1日あたりの学習時間" value={dailyStudy} onChange={onDailyStudy} />
+        <p {...stylex.props(styles.q)}>いつまでに達成したいですか</p>
+        <ChoiceButtons
+          name="期限"
+          options={DEADLINE_OPTIONS.map((d) => ({ value: d.months, label: d.label }))}
+          value={deadlineMonths}
+          onChange={onDeadlineMonths}
+        />
+        <div {...stylex.props(styles.when)}>
+          <span {...stylex.props(styles.whenLabel)}>期限</span>
+          <span {...stylex.props(styles.whenValue)}>{due ? ym(due) : '—'}</span>
+          <span {...stylex.props(styles.whenLabel)}>
+            この期限から、1日あたり何時間必要かを逆算します
+          </span>
         </div>
-        <p {...stylex.props(styles.share)}>
-          月 <span {...stylex.props(styles.num)}>{n1(monthlyStudy)}</span> 時間
-          {studyShareOfFree === null
-            ? '（空き時間が0時間です）'
-            : `　＝　空き時間の ${n0(studyShareOfFree)} ％`}
-        </p>
-        {overCapacity ? (
-          <p {...stylex.props(styles.warn)}>
-            学習時間が、06 で入力した空き時間を超えています。
-          </p>
-        ) : null}
       </div>
 
       <div {...stylex.props(styles.block, styles.nameRow)}>

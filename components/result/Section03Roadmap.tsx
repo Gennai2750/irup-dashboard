@@ -4,7 +4,7 @@ import * as stylex from '@stylexjs/stylex';
 import { colors, fonts, shape } from '@/app/tokens.stylex';
 import { Card } from '@/components/ui/Card';
 import { layerByKey, type Derived } from '@/lib/calc';
-import { hours, monthCount, n1 } from '@/lib/format';
+import { hours, n1 } from '@/lib/format';
 
 const styles = stylex.create({
   lead: {
@@ -159,7 +159,7 @@ export function Section03Roadmap({ d }: { d: Derived }) {
           </thead>
           <tbody>
             {d.gapSkills.map((g, i) => {
-              const m = d.monthlyStudy > 0 ? g.cumulative / d.monthlyStudy : null;
+              const days = d.dailyStudy > 0 ? Math.ceil(g.cumulative / d.dailyStudy) : null;
               return (
                 <tr key={g.name}>
                   <td {...stylex.props(styles.no)}>{i + 1}</td>
@@ -183,7 +183,11 @@ export function Section03Roadmap({ d }: { d: Derived }) {
                   <td {...stylex.props(styles.tdNum)}>{n1(g.remain)}</td>
                   <td {...stylex.props(styles.tdNum)}>{hours(g.cumulative)}</td>
                   <td {...stylex.props(styles.tdNum, styles.month)}>
-                    {m === null ? '—' : `${monthCount(m)}ヶ月目`}
+                    {days === null
+                      ? '—'
+                      : days <= 60
+                        ? `${days}日目`
+                        : `約${Math.ceil(days / 30.45)}ヶ月目`}
                   </td>
                 </tr>
               );
@@ -194,7 +198,7 @@ export function Section03Roadmap({ d }: { d: Derived }) {
       <p {...stylex.props(styles.note)}>
         「到達点」は、その項目に求められるレベルです。目標レイヤーの技術は「扱える」まで、
         それより下のレイヤーの技術は「教えられる」まで。「残り」は、必要な時間からいまの到達分を引いた時間、
-        「完了」は上から順に学んだ場合にその項目を学び終える月です。
+        「完了」は、上から順に学んだ場合に、1日 {n1(d.dailyStudy)} 時間のペースでその項目を学び終える日です。
       </p>
     </Card>
   );

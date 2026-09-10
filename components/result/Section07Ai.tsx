@@ -3,7 +3,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors, fonts, shape } from '@/app/tokens.stylex';
 import { Card } from '@/components/ui/Card';
-import { AI_HOURS_PER_STEP, AI_LEVELS } from '@/lib/constants';
+import { AI_DAILY_MINUTES, AI_LEVELS } from '@/lib/constants';
 import { layerByKey, type Derived } from '@/lib/calc';
 
 const styles = stylex.create({
@@ -96,8 +96,9 @@ export function Section07Ai({ aiLevel, d }: { aiLevel: number; d: Derived }) {
       </div>
       <p {...stylex.props(styles.note)}>
         {d.aiGapSteps > 0
-          ? `レベル ${aiLevel} から ${required} まで ${d.aiGapSteps} 段。1段 ${AI_HOURS_PER_STEP} 時間として、${d.aiHours} 時間を試算に含めています。`
+          ? `レベル ${aiLevel} から ${required} まで、あと ${d.aiGapSteps} 段です。`
           : '目標のレイヤーで求められる水準には、すでに届いています。'}
+        {`　ここは「◯時間やれば終わり」ではありません。3年かけて知識だけを積んでも、AIを使えなければ価値になりません。毎日 ${AI_DAILY_MINUTES} 分、最新情報に触れ続けることを前提に置いています。`}
       </p>
     </Card>
   );

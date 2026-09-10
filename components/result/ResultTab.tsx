@@ -33,7 +33,7 @@ export function ResultTab({
       <Section01Layer d={derived} />
       <Section02Estimate s={state} d={derived} today={today} />
       <Section03Roadmap d={derived} />
-      <Section04Pace s={state} d={derived} today={today} />
+      <Section04Pace d={derived} today={today} />
       <Section05Stock
         no="05"
         title="いまの技術在庫"

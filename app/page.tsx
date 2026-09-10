@@ -110,7 +110,7 @@ export default function Home() {
       weekdayFree: (v: number) => setState((s) => ({ ...s, weekdayFree: v })),
       holidayFree: (v: number) => setState((s) => ({ ...s, holidayFree: v })),
       holidayPerWeek: (v: number) => setState((s) => ({ ...s, holidayPerWeek: v })),
-      dailyStudy: (v: number) => setState((s) => ({ ...s, dailyStudy: v })),
+      deadlineMonths: (v: number) => setState((s) => ({ ...s, deadlineMonths: v })),
       name: (v: string) => setState((s) => ({ ...s, name: v })),
     }),
     [],
@@ -152,7 +152,13 @@ export default function Home() {
         </div>
 
         {tab === 'hearing' ? (
-          <HearingTab state={state} derived={derived} set={set} onGoResult={goResult} />
+          <HearingTab
+            state={state}
+            derived={derived}
+            set={set}
+            today={today}
+            onGoResult={goResult}
+          />
         ) : (
           <ResultTab state={state} derived={derived} today={today} />
         )}

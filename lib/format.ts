@@ -32,3 +32,14 @@ export function span(m: number | null): string {
   if (mm === 0) return `${y}年`;
   return `${y}年${mm}ヶ月`;
 }
+
+/** 時間を「2時間6分」「30分」の形にする */
+export function hm(h: number): string {
+  if (!Number.isFinite(h) || h <= 0) return '0分';
+  const total = Math.round(h * 60);
+  const hh = Math.floor(total / 60);
+  const mm = total % 60;
+  if (hh === 0) return `${mm}分`;
+  if (mm === 0) return `${hh}時間`;
+  return `${hh}時間${mm}分`;
+}
