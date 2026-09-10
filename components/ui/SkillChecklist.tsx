@@ -52,6 +52,7 @@ const styles = stylex.create({
     fontSize: '11px',
     color: colors.textFaint,
     flexShrink: 0,
+    whiteSpace: 'nowrap',
   },
   select: {
     fontFamily: fonts.sans,
@@ -111,7 +112,9 @@ export function SkillChecklist({
                       onChange={(e) => onToggle(item.name, e.target.checked)}
                     />
                     <span>{item.name}</span>
-                    <span {...stylex.props(styles.hrs)}>{item.hours}h</span>
+                    <span {...stylex.props(styles.hrs)}>
+                      {item.useHours}／{item.teachHours}h
+                    </span>
                   </label>
                   <select
                     {...stylex.props(styles.select, !checked && styles.hidden)}

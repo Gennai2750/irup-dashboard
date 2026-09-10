@@ -42,8 +42,8 @@ export function Block03Skills({
       }
     >
       <p {...stylex.props(styles.lead)}>
-        できるものにチェックを入れ、理解度を選んでください。項目の横の数字は、
-        その技術を身につけるための標準学習時間です。
+        できるものにチェックを入れ、理解度を選んでください。項目の横の数字は
+        「扱えるまで／教えられるまで」の標準学習時間です。
       </p>
       <SkillChecklist items={items} held={skills} onToggle={onToggle} onLevel={onLevel} />
     </Card>

@@ -91,7 +91,7 @@ export default function Home() {
       skillToggle: (name: string, checked: boolean) =>
         setState((s) => {
           const next = { ...s.skills };
-          if (checked) next[name] = 'doing';
+          if (checked) next[name] = 'use';
           else delete next[name];
           return { ...s, skills: next };
         }),
@@ -100,7 +100,7 @@ export default function Home() {
       softToggle: (name: string, checked: boolean) =>
         setState((s) => {
           const next = { ...s.softSkills };
-          if (checked) next[name] = 'doing';
+          if (checked) next[name] = 'use';
           else delete next[name];
           return { ...s, softSkills: next };
         }),

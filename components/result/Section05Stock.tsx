@@ -37,13 +37,13 @@ const styles = stylex.create({
     borderStyle: 'solid',
   },
   teach: { color: colors.accentText, backgroundColor: colors.accent, borderColor: colors.accent },
-  doing: { color: colors.text, backgroundColor: colors.accentWeak, borderColor: colors.accentBorder },
+  use: { color: colors.text, backgroundColor: colors.accentWeak, borderColor: colors.accentBorder },
   tried: { color: colors.textMuted, backgroundColor: colors.cardBg, borderColor: colors.border },
   none: { fontFamily: fonts.sans, fontSize: '12px', color: colors.textFaint },
   empty: { fontFamily: fonts.sans, fontSize: '13px', color: colors.textMuted, padding: '18px 0' },
 });
 
-const tierStyle = { teach: styles.teach, doing: styles.doing, tried: styles.tried } as const;
+const tierStyle = { teach: styles.teach, use: styles.use, tried: styles.tried } as const;
 
 export function Section05Stock({
   title,

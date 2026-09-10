@@ -39,7 +39,7 @@ export function Block05SoftSkills({
     >
       <p {...stylex.props(styles.lead)}>
         単価は技術だけで決まりません。設計より上のレイヤーでは、
-        こちらが揃っているかどうかで差がつきます。
+        こちらが揃っているかどうかで差がつきます。数字は「扱えるまで／教えられるまで」の時間です。
       </p>
       <SkillChecklist
         items={SOFT_SKILLS}

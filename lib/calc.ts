@@ -8,9 +8,10 @@ import {
   LAYER_ORDER,
   RATE_STEP,
   ROLE_SKILLS,
+  REQUIRE_TEACH_BELOW_TARGET,
   SKILL_LEVELS,
   SOFT_SKILLS,
-  UNCHECKED_REMAIN,
+  TRIED_PROGRESS,
   WEEKS_PER_MONTH,
   type LayerKey,
   type RoleKey,
@@ -75,15 +76,39 @@ export function layerOfRate(rate: number): LayerKey {
 
 export const layerByKey = (key: LayerKey) => LAYERS.find((l) => l.key === key)!;
 
-/** 理解度に応じて「残っている学習時間の割合」を返す */
-export function remainRatio(level: SkillLevel | undefined): number {
-  if (level === undefined) return UNCHECKED_REMAIN;
-  return SKILL_LEVELS.find((l) => l.value === level)?.remain ?? UNCHECKED_REMAIN;
+/** その項目に、いままでに投じ終えた時間 */
+export function progressHours(item: SkillItem, level: SkillLevel | undefined): number {
+  switch (level) {
+    case 'teach':
+      return item.teachHours;
+    case 'use':
+      return item.useHours;
+    case 'tried':
+      return item.useHours * TRIED_PROGRESS;
+    default:
+      return 0;
+  }
 }
 
+/**
+ * その項目に求められる到達レベル。
+ * 目標レイヤー自身の技術は「扱える」まで、それより下のレイヤーは「教えられる」まで。
+ */
+export function requiredLevelOf(item: SkillItem, targetLayer: LayerKey): 'use' | 'teach' {
+  if (!REQUIRE_TEACH_BELOW_TARGET) return 'use';
+  return LAYER_ORDER[item.layer] < LAYER_ORDER[targetLayer] ? 'teach' : 'use';
+}
+
+/** その到達レベルに必要な時間 */
+export const requiredHours = (item: SkillItem, targetLayer: LayerKey): number =>
+  requiredLevelOf(item, targetLayer) === 'teach' ? item.teachHours : item.useHours;
+
 /** その項目に残っている学習時間 */
-export const remainingHours = (item: SkillItem, level: SkillLevel | undefined): number =>
-  item.hours * remainRatio(level);
+export const remainingHours = (
+  item: SkillItem,
+  level: SkillLevel | undefined,
+  targetLayer: LayerKey,
+): number => Math.max(0, requiredHours(item, targetLayer) - progressHours(item, level));
 
 /* ------------------------------------------------------------------ */
 /* 集計                                                                */
@@ -92,6 +117,12 @@ export const remainingHours = (item: SkillItem, level: SkillLevel | undefined): 
 export type GapItem = SkillItem & {
   /** いまの理解度（未チェックなら undefined） */
   level: SkillLevel | undefined;
+  /** 求められる到達レベル */
+  requiredLevel: 'use' | 'teach';
+  /** その到達レベルに必要な時間 */
+  required: number;
+  /** すでに投じ終えた時間 */
+  progress: number;
   /** 残っている学習時間 */
   remain: number;
   /** ここまでの累積学習時間 */
@@ -141,11 +172,11 @@ export type Derived = {
 
 const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0);
 
-/** レイヤーの浅い順 → 学習時間の短い順。学ぶ順路として自然な並びにする */
+/** レイヤーの浅い順 → 残り時間の短い順。学ぶ順路として自然な並びにする */
 function sortForRoadmap(a: GapItem, b: GapItem): number {
   const d = LAYER_ORDER[a.layer] - LAYER_ORDER[b.layer];
   if (d !== 0) return d;
-  return a.hours - b.hours;
+  return a.remain - b.remain;
 }
 
 function buildGap(
@@ -157,7 +188,15 @@ function buildGap(
   const gap = required
     .map((i) => {
       const level = held[i.name];
-      return { ...i, level, remain: remainingHours(i, level), cumulative: 0 };
+      return {
+        ...i,
+        level,
+        requiredLevel: requiredLevelOf(i, targetLayer),
+        required: requiredHours(i, targetLayer),
+        progress: progressHours(i, level),
+        remain: remainingHours(i, level, targetLayer),
+        cumulative: 0,
+      };
     })
     .filter((g) => g.remain > 0)
     .sort(sortForRoadmap);

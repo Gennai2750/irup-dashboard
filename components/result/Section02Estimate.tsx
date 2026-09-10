@@ -3,7 +3,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors, fonts, shape } from '@/app/tokens.stylex';
 import { Card } from '@/components/ui/Card';
-import { AI_HOURS_PER_STEP, DAYS_PER_MONTH, SKILL_LEVELS } from '@/lib/constants';
+import { AI_HOURS_PER_STEP, DAYS_PER_MONTH, TRIED_PROGRESS } from '@/lib/constants';
 import { arrivalDate, type Derived, type FormState } from '@/lib/calc';
 import { hours, monthCount, n0, n1, span, ym } from '@/lib/format';
 
@@ -230,13 +230,19 @@ export function Section02Estimate({
         <p {...stylex.props(styles.assumeHead)}>この試算の前提</p>
         <ul {...stylex.props(styles.list)}>
           <li {...stylex.props(styles.li)}>
-            各項目の標準学習時間は、資格試験の学習時間の目安をもとに置いた値です（例：AWS
-            SAA は初心者50〜80時間・実務経験者20〜50時間とされる）。実測値ではありません。
+            各項目には「<strong>扱えるまで</strong>（手を動かして成果物を出せる）」と「
+            <strong>教えられるまで</strong>（なぜそれを選んだかを説明でき、人に教えられる）」の
+            2 つの標準学習時間を持たせています。資格試験の学習時間の目安をもとに置いた値で、実測値ではありません
+            （例：AWS SAA は初心者50〜80時間・実務経験者20〜50時間とされる）。
           </li>
           <li {...stylex.props(styles.li)}>
-            理解度に応じて、残っている学習時間を次の割合で数えています：
-            {SKILL_LEVELS.map((l) => `${l.label} ${Math.round(l.remain * 100)}％`).join(' ／ ')}
-            ／ 未チェック 100％。
+            <strong>目標レイヤーの技術は「扱える」まで、それより下のレイヤーの技術は「教えられる」まで</strong>
+            を到達点にしています。AI が出した答えを後から説明し、技術選定の根拠を持つには、
+            土台になっている層を「なぜそれを選んだのか」まで言える必要があるためです。
+          </li>
+          <li {...stylex.props(styles.li)}>
+            すでに投じ終えた時間の数え方：教えられる＝教えられるまでの時間 ／ 扱える＝扱えるまでの時間 ／
+            かじった＝扱えるまでの時間の {Math.round(TRIED_PROGRESS * 100)}％ ／ 未チェック＝0。
           </li>
           <li {...stylex.props(styles.li)}>
             AI活用は、目標レイヤーで求められるレベルまで1段あたり

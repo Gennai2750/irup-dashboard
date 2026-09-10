@@ -15,7 +15,7 @@ const styles = stylex.create({
     marginBottom: '14px',
   },
   wrap: { overflowX: 'auto' },
-  table: { width: '100%', minWidth: '620px' },
+  table: { width: '100%', minWidth: '760px' },
   th: {
     fontFamily: fonts.sans,
     fontSize: '11.5px',
@@ -90,6 +90,23 @@ const styles = stylex.create({
     whiteSpace: 'nowrap',
   },
   level: { fontFamily: fonts.sans, fontSize: '11px', color: colors.textFaint, marginLeft: '8px' },
+  goal: {
+    fontFamily: fonts.sans,
+    fontSize: '10.5px',
+    color: colors.textMuted,
+    backgroundColor: colors.cardBg,
+    borderWidth: '1px',
+    borderStyle: 'solid',
+    borderColor: colors.border,
+    borderRadius: shape.radiusSm,
+    padding: '2px 6px',
+    whiteSpace: 'nowrap',
+  },
+  goalTeach: {
+    color: colors.accentText,
+    backgroundColor: colors.accent,
+    borderColor: colors.accent,
+  },
   month: { color: colors.accent, fontWeight: 700 },
   empty: { fontFamily: fonts.sans, fontSize: '13px', color: colors.textMuted, padding: '18px 0' },
   note: { fontFamily: fonts.sans, fontSize: '11px', lineHeight: 1.8, color: colors.textFaint, marginTop: '12px' },
@@ -123,8 +140,11 @@ export function Section03Roadmap({ d }: { d: Derived }) {
               <th {...stylex.props(styles.th)} scope="col">
                 レイヤー
               </th>
+              <th {...stylex.props(styles.th)} scope="col">
+                到達点
+              </th>
               <th {...stylex.props(styles.thNum)} scope="col">
-                標準
+                必要
               </th>
               <th {...stylex.props(styles.thNum)} scope="col">
                 残り
@@ -147,14 +167,19 @@ export function Section03Roadmap({ d }: { d: Derived }) {
                     {g.name}
                     {g.level ? (
                       <span {...stylex.props(styles.level)}>
-                        いま：{g.level === 'doing' ? '業務でやっている' : 'かじった'}
+                        いま：{g.level === 'use' ? '扱える' : 'かじった'}
                       </span>
                     ) : null}
                   </td>
                   <td {...stylex.props(styles.td)}>
                     <span {...stylex.props(styles.layer)}>{layerByKey(g.layer).name}</span>
                   </td>
-                  <td {...stylex.props(styles.tdNum)}>{g.hours}</td>
+                  <td {...stylex.props(styles.td)}>
+                    <span {...stylex.props(styles.goal, g.requiredLevel === 'teach' && styles.goalTeach)}>
+                      {g.requiredLevel === 'teach' ? '教えられる' : '扱える'}
+                    </span>
+                  </td>
+                  <td {...stylex.props(styles.tdNum)}>{g.required}</td>
                   <td {...stylex.props(styles.tdNum)}>{n1(g.remain)}</td>
                   <td {...stylex.props(styles.tdNum)}>{hours(g.cumulative)}</td>
                   <td {...stylex.props(styles.tdNum, styles.month)}>
@@ -167,8 +192,9 @@ export function Section03Roadmap({ d }: { d: Derived }) {
         </table>
       </div>
       <p {...stylex.props(styles.note)}>
-        「残り」は、標準学習時間に理解度の割合を掛けた時間です。「完了」は、
-        上から順に学んだ場合に、その項目を学び終える月です。
+        「到達点」は、その項目に求められるレベルです。目標レイヤーの技術は「扱える」まで、
+        それより下のレイヤーの技術は「教えられる」まで。「残り」は、必要な時間からいまの到達分を引いた時間、
+        「完了」は上から順に学んだ場合にその項目を学び終える月です。
       </p>
     </Card>
   );
