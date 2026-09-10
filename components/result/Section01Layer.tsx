@@ -16,7 +16,11 @@ const styles = stylex.create({
   },
   grid: {
     display: 'grid',
-    gridTemplateColumns: { default: 'repeat(4, 1fr)', '@media (max-width: 860px)': '1fr' },
+    gridTemplateColumns: {
+      default: 'repeat(5, 1fr)',
+      '@media (max-width: 1000px)': 'repeat(3, 1fr)',
+      '@media (max-width: 700px)': '1fr',
+    },
     gap: '10px',
   },
   cell: {
@@ -42,7 +46,7 @@ const styles = stylex.create({
     color: colors.textMuted,
     letterSpacing: '0.02em',
   },
-  name: { fontFamily: fonts.serif, fontSize: '16px', fontWeight: 600, color: colors.text },
+  name: { fontFamily: fonts.serif, fontSize: '15px', fontWeight: 600, color: colors.text },
   summary: { fontFamily: fonts.sans, fontSize: '12px', color: colors.textMuted, lineHeight: 1.7 },
   ai: {
     fontFamily: fonts.sans,
