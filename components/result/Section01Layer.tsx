@@ -117,7 +117,6 @@ export function Section01Layer({ d }: { d: Derived }) {
               <span {...stylex.props(styles.range)}>{rangeLabel(i)}</span>
               <span {...stylex.props(styles.name)}>{l.name}</span>
               <span {...stylex.props(styles.summary)}>{l.summary}</span>
-              <span {...stylex.props(styles.ai)}>AI活用レベル {l.aiLevel} 以上</span>
               <span {...stylex.props(styles.tags)}>
                 {isCurrent ? <span {...stylex.props(styles.tagNow)}>いまここ</span> : null}
                 {isTarget ? <span {...stylex.props(styles.tagGoal)}>目標</span> : null}

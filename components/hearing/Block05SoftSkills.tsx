@@ -17,7 +17,7 @@ const styles = stylex.create({
   count: { fontFamily: fonts.mono, fontVariantNumeric: 'tabular-nums' },
 });
 
-export function Block05SoftSkills({
+export function Block04SoftSkills({
   softSkills,
   onToggle,
   onLevel,
@@ -29,7 +29,7 @@ export function Block05SoftSkills({
   const checked = SOFT_SKILLS.filter((i) => softSkills[i.name] !== undefined).length;
   return (
     <Card
-      no="05"
+      no="04"
       title="技術以外の能力"
       right={
         <>

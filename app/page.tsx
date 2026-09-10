@@ -106,7 +106,6 @@ export default function Home() {
         }),
       softLevel: (name: string, level: SkillLevel) =>
         setState((s) => ({ ...s, softSkills: { ...s.softSkills, [name]: level } })),
-      aiLevel: (v: number) => setState((s) => ({ ...s, aiLevel: v })),
       weekdayFree: (v: number) => setState((s) => ({ ...s, weekdayFree: v })),
       holidayFree: (v: number) => setState((s) => ({ ...s, holidayFree: v })),
       holidayPerWeek: (v: number) => setState((s) => ({ ...s, holidayPerWeek: v })),

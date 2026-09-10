@@ -34,9 +34,9 @@ const styles = stylex.create({
   },
 });
 
-export function Section08Next() {
+export function Section07Next() {
   return (
-    <Card no="08" title="今日、最初に手をつけること" right={<span {...stylex.props(styles.tag)}>未記入</span>}>
+    <Card no="07" title="今日、最初に手をつけること" right={<span {...stylex.props(styles.tag)}>未記入</span>}>
       {[0, 1, 2].map((i) => (
         <div key={i} {...stylex.props(styles.row)}>
           <span {...stylex.props(styles.box)} />

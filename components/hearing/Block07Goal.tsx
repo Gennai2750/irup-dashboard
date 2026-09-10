@@ -60,7 +60,7 @@ const styles = stylex.create({
   hint: { fontFamily: fonts.sans, fontSize: '12px', color: colors.textFaint },
 });
 
-export function Block07Goal({
+export function Block06Goal({
   goalRate,
   onGoalRate,
   goalNotHigher,
@@ -81,7 +81,7 @@ export function Block07Goal({
 }) {
   const due = today ? targetDate(today, deadlineMonths) : null;
   return (
-    <Card no="07" title="目標">
+    <Card no="06" title="目標">
       <p {...stylex.props(styles.q)}>単価を幾らまで上げたいですか（5万円刻み）</p>
       <ChoiceButtons
         name="目標の単価"

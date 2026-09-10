@@ -8,8 +8,7 @@ import { Section03Roadmap } from './Section03Roadmap';
 import { Section04Pace } from './Section04Pace';
 import { Section05Stock } from './Section05Stock';
 import { Section06Soft } from './Section06Soft';
-import { Section07Ai } from './Section07Ai';
-import { Section08Next } from './Section08Next';
+import { Section07Next } from './Section07Next';
 import { Sources } from './Sources';
 import type { Derived, FormState } from '@/lib/calc';
 import { ROLE_SKILLS } from '@/lib/constants';
@@ -41,8 +40,7 @@ export function ResultTab({
         names={ROLE_SKILLS[state.role].map((i) => i.name)}
       />
       <Section06Soft d={derived} />
-      <Section07Ai aiLevel={state.aiLevel} d={derived} />
-      <Section08Next />
+      <Section07Next />
       <Sources />
     </div>
   );

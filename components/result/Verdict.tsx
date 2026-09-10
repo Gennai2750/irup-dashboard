@@ -35,7 +35,7 @@ const styles = stylex.create({
     borderTopWidth: '1px',
     borderTopStyle: 'solid',
     borderTopColor: colors.border,
-    paddingTop: '16px',
+    paddingTop: '4px',
   },
   row: {
     display: 'grid',
@@ -61,9 +61,6 @@ const styles = stylex.create({
     gridTemplateColumns: { default: 'auto 1fr', '@media (max-width: 560px)': '1fr' },
     alignItems: 'baseline',
     gap: '14px',
-    borderTopWidth: '1px',
-    borderTopStyle: 'solid',
-    borderTopColor: colors.borderStrong,
     marginTop: '6px',
     paddingTop: '12px',
   },
@@ -79,6 +76,7 @@ const styles = stylex.create({
   ok: {
     fontFamily: fonts.sans,
     fontSize: '13px',
+    lineHeight: 1.9,
     color: colors.textMuted,
   },
   ng: {
@@ -160,29 +158,22 @@ export function Verdict({ s, d, today }: { s: FormState; d: Derived; today: Date
       </p>
 
       <div {...stylex.props(styles.plan)}>
-        <div {...stylex.props(styles.row)}>
-          <span {...stylex.props(styles.amount)}>毎日 {hm(d.aiDaily)}</span>
-          <span {...stylex.props(styles.what)}>
-            AIの最新情報のキャッチアップ
-            <span {...stylex.props(styles.sub)}>期限に関係なく、ずっと続ける</span>
-          </span>
-        </div>
-        <div {...stylex.props(styles.row)}>
-          <span {...stylex.props(styles.amount)}>毎日 {hm(d.dailyStudy)}</span>
-          <span {...stylex.props(styles.what)}>
-            {d.alreadyThere ? '技術の学習（必要な項目は揃っています）' : '技術と、技術以外の学習'}
-            {d.alreadyThere ? null : (
-              <span {...stylex.props(styles.sub)}>
-                残り {hours(d.totalHours)}h ÷ {span(d.deadlineMonths)}
-              </span>
-            )}
-          </span>
-        </div>
         <div {...stylex.props(styles.totalRow)}>
-          <span {...stylex.props(styles.totalAmount)}>合計 {hm(d.dailyTotal)}</span>
+          <span {...stylex.props(styles.totalAmount)}>毎日 {hm(d.dailyStudy)}</span>
           <span {...stylex.props(styles.ok)}>
-            1日の空き時間 {n1(d.dailyFree)} 時間
-            {d.dailyShareOfFree === null ? '' : ` の ${n0(d.dailyShareOfFree)}％`}
+            {d.alreadyThere ? (
+              '必要な項目は揃っています'
+            ) : (
+              <>
+                技術と、技術以外の学習
+                <span {...stylex.props(styles.sub)}>
+                  残り {hours(d.totalHours)}h ÷ {span(d.deadlineMonths)}
+                </span>
+                <br />
+                1日の空き時間 {n1(d.dailyFree)} 時間
+                {d.dailyShareOfFree === null ? '' : ` の ${n0(d.dailyShareOfFree)}％`}
+              </>
+            )}
           </span>
         </div>
       </div>

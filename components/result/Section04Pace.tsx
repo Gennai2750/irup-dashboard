@@ -4,7 +4,7 @@ import * as stylex from '@stylexjs/stylex';
 import { colors, fonts } from '@/app/tokens.stylex';
 import { Card } from '@/components/ui/Card';
 import { DEADLINE_PATTERNS } from '@/lib/constants';
-import { AI_DAILY_HOURS, dailyStudyForMonths, targetDate, type Derived } from '@/lib/calc';
+import { dailyStudyForMonths, targetDate, type Derived } from '@/lib/calc';
 import { hm, n0, n1, span, ym } from '@/lib/format';
 
 const styles = stylex.create({
@@ -16,7 +16,7 @@ const styles = stylex.create({
     marginBottom: '14px',
   },
   wrap: { overflowX: 'auto' },
-  table: { width: '100%', minWidth: '620px' },
+  table: { width: '100%', minWidth: '520px' },
   th: {
     fontFamily: fonts.sans,
     fontSize: '11.5px',
@@ -92,7 +92,6 @@ export function Section04Pace({ d, today }: { d: Derived; today: Date | null }) 
     <Card no="04" title="期限を変えると、1日あたりがどう変わるか">
       <p {...stylex.props(styles.lead)}>
         残り {Math.round(d.totalHours)} 時間を、期限を変えて割った場合です。
-        どの行にも、毎日の AI キャッチアップ {hm(d.aiDaily)} が含まれています。
         いま選んでいる期限を朱色で示しています。
       </p>
       <div {...stylex.props(styles.wrap)}>
@@ -106,13 +105,7 @@ export function Section04Pace({ d, today }: { d: Derived; today: Date | null }) 
                 いつ
               </th>
               <th {...stylex.props(styles.thNum)} scope="col">
-                技術など
-              </th>
-              <th {...stylex.props(styles.thNum)} scope="col">
-                ＋AI
-              </th>
-              <th {...stylex.props(styles.thNum)} scope="col">
-                1日の合計
+                1日あたり
               </th>
               <th {...stylex.props(styles.thNum)} scope="col">
                 空き時間の
@@ -121,8 +114,7 @@ export function Section04Pace({ d, today }: { d: Derived; today: Date | null }) 
           </thead>
           <tbody>
             {DEADLINE_PATTERNS.map((m) => {
-              const study = dailyStudyForMonths(d.totalHours, m);
-              const total = study + AI_DAILY_HOURS;
+              const total = dailyStudyForMonths(d.totalHours, m);
               const over = total > d.dailyFree;
               const isCurrent = m === d.deadlineMonths;
               const due = today ? targetDate(today, m) : null;
@@ -133,8 +125,6 @@ export function Section04Pace({ d, today }: { d: Derived; today: Date | null }) 
                     {span(m)}後
                   </th>
                   <td {...stylex.props(styles.td)}>{due ? ym(due) : '—'}</td>
-                  <td {...stylex.props(styles.tdNum)}>{n1(study)}</td>
-                  <td {...stylex.props(styles.tdNum)}>{n1(AI_DAILY_HOURS)}</td>
                   <td {...stylex.props(styles.tdNum, isCurrent && styles.current)}>{hm(total)}</td>
                   <td {...stylex.props(styles.tdNum, over && styles.over)}>
                     {share === null ? '—' : over ? '超える' : `${n0(share)} ％`}

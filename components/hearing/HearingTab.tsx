@@ -5,10 +5,9 @@ import { colors, fonts, shape } from '@/app/tokens.stylex';
 import { Block01Role } from './Block01Role';
 import { Block02CurrentRate } from './Block02CurrentRate';
 import { Block03Skills } from './Block03Skills';
-import { Block04Ai } from './Block04Ai';
-import { Block05SoftSkills } from './Block05SoftSkills';
-import { Block06Free } from './Block06Free';
-import { Block07Goal } from './Block07Goal';
+import { Block04SoftSkills } from './Block05SoftSkills';
+import { Block05Free } from './Block06Free';
+import { Block06Goal } from './Block07Goal';
 import type { Derived, FormState } from '@/lib/calc';
 import type { RoleKey, SkillLevel } from '@/lib/constants';
 
@@ -38,7 +37,6 @@ export type Setters = {
   skillLevel: (name: string, level: SkillLevel) => void;
   softToggle: (name: string, checked: boolean) => void;
   softLevel: (name: string, level: SkillLevel) => void;
-  aiLevel: (v: number) => void;
   weekdayFree: (v: number) => void;
   holidayFree: (v: number) => void;
   holidayPerWeek: (v: number) => void;
@@ -69,13 +67,12 @@ export function HearingTab({
         onToggle={set.skillToggle}
         onLevel={set.skillLevel}
       />
-      <Block04Ai aiLevel={state.aiLevel} onAiLevel={set.aiLevel} />
-      <Block05SoftSkills
+      <Block04SoftSkills
         softSkills={state.softSkills}
         onToggle={set.softToggle}
         onLevel={set.softLevel}
       />
-      <Block06Free
+      <Block05Free
         weekdayFree={state.weekdayFree}
         onWeekdayFree={set.weekdayFree}
         holidayFree={state.holidayFree}
@@ -86,7 +83,7 @@ export function HearingTab({
         holidayDaysPerMonth={derived.holidayDaysPerMonth}
         monthlyFree={derived.monthlyFree}
       />
-      <Block07Goal
+      <Block06Goal
         goalRate={state.goalRate}
         onGoalRate={set.goalRate}
         goalNotHigher={derived.goalNotHigher}

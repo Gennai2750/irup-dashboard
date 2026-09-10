@@ -68,7 +68,7 @@ const styles = stylex.create({
   note: { fontFamily: fonts.sans, fontSize: '12px', color: colors.textFaint, marginTop: '10px' },
 });
 
-export function Block06Free({
+export function Block05Free({
   weekdayFree,
   onWeekdayFree,
   holidayFree,
@@ -90,7 +90,7 @@ export function Block06Free({
   monthlyFree: number;
 }) {
   return (
-    <Card no="06" title="現在の空き時間">
+    <Card no="05" title="現在の空き時間">
       <p {...stylex.props(styles.q)}>週に何日休みですか</p>
       <ChoiceButtons
         name="週の休日数"

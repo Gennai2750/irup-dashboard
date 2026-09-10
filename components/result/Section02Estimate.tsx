@@ -3,7 +3,7 @@
 import * as stylex from '@stylexjs/stylex';
 import { colors, fonts, shape } from '@/app/tokens.stylex';
 import { Card } from '@/components/ui/Card';
-import { AI_DAILY_MINUTES, DAYS_PER_MONTH, TRIED_PROGRESS } from '@/lib/constants';
+import { DAYS_PER_MONTH, TRIED_PROGRESS } from '@/lib/constants';
 import { targetDate, type Derived, type FormState } from '@/lib/calc';
 import { hm, hours, n0, n1, span, ym } from '@/lib/format';
 
@@ -199,26 +199,19 @@ export function Section02Estimate({
               </tr>
             </tfoot>
           </table>
-          <p {...stylex.props(styles.bigSub)}>
-            AIのキャッチアップはこの合計に入れていません。期限で終わる学習ではないため、
-            毎日 {AI_DAILY_MINUTES} 分の習慣として別に置いています。
-          </p>
         </div>
 
         <div {...stylex.props(styles.result)}>
           <div {...stylex.props(styles.big)}>
             <span {...stylex.props(styles.bigLabel)}>1日あたり必要な学習時間</span>
-            <span {...stylex.props(styles.bigValue)}>{hm(d.dailyTotal)}</span>
+            <span {...stylex.props(styles.bigValue)}>{hm(d.dailyStudy)}</span>
             <span {...stylex.props(styles.bigSub)}>
-              AIキャッチアップ {hm(d.aiDaily)} ＋ 技術など {hm(d.dailyStudy)}
-              {due ? ` ／ 期限 ${ym(due)}` : ''}
+              {due ? `期限 ${ym(due)}` : ''}
             </span>
           </div>
           <div {...stylex.props(styles.formula)}>
             {hours(d.totalHours)} h ÷ ( {d.deadlineMonths} ヶ月 × {DAYS_PER_MONTH.toFixed(2)} 日 ){'\n'}
-            ＝ 1日 {n1(d.dailyStudy)} h（技術など）{'\n'}
-            ＋ 1日 {n1(d.aiDaily)} h（AIキャッチアップ）{'\n'}
-            ＝ 1日 {n1(d.dailyTotal)} h
+            ＝ 1日 {n1(d.dailyStudy)} h
           </div>
           {!d.feasible ? (
             <p {...stylex.props(styles.warn)}>
@@ -251,11 +244,6 @@ export function Section02Estimate({
           <li {...stylex.props(styles.li)}>
             すでに投じ終えた時間の数え方：教えられる＝教えられるまでの時間 ／ 扱える＝扱えるまでの時間 ／
             かじった＝扱えるまでの時間の {Math.round(TRIED_PROGRESS * 100)}％ ／ 未チェック＝0。
-          </li>
-          <li {...stylex.props(styles.li)}>
-            <strong>AI活用は「◯時間やれば終わり」の学習として数えていません。</strong>
-            知識だけを 3 年かけて積んでも、AI を使えなければ価値になりません。
-            毎日 {AI_DAILY_MINUTES} 分、最新情報に触れ続けることを前提に固定で置いています。
           </li>
           <li {...stylex.props(styles.li)}>
             1ヶ月＝{DAYS_PER_MONTH.toFixed(2)}日（4.35週×7日）。1日あたりの空き時間は、
