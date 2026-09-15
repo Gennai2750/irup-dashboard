@@ -5,9 +5,9 @@ import { colors, fonts, shape } from '@/app/tokens.stylex';
 import { Block01Role } from './Block01Role';
 import { Block02CurrentRate } from './Block02CurrentRate';
 import { Block03Skills } from './Block03Skills';
-import { Block04SoftSkills } from './Block05SoftSkills';
-import { Block05Free } from './Block06Free';
-import { Block06Goal } from './Block07Goal';
+import { Block04SoftSkills } from './Block04SoftSkills';
+import { Block05Free } from './Block05Free';
+import { Block06Goal } from './Block06Goal';
 import type { Derived, FormState } from '@/lib/calc';
 import type { RoleKey, SkillLevel } from '@/lib/constants';
 
