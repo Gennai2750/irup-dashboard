@@ -22,14 +22,19 @@ export const ym = (d: Date): string => `${d.getFullYear()}年${d.getMonth() + 1}
 export const monthCount = (m: number | null): string =>
   m === null || !Number.isFinite(m) ? '—' : Math.max(1, Math.ceil(m)).toString();
 
-/** 「◯年◯ヶ月」表記。12ヶ月未満は月だけ */
+/**
+ * 「◯年◯ヶ月」表記。12ヶ月未満は月だけ。
+ * 6ヶ月ちょうどは「半年」、◯年6ヶ月は「◯年半」と書く。
+ * これで span(月数) + 「後」が DEADLINE_OPTIONS の label と必ず一致する。
+ */
 export function span(m: number | null): string {
   if (m === null || !Number.isFinite(m)) return '—';
   const total = Math.max(1, Math.ceil(m));
   const y = Math.floor(total / 12);
   const mm = total % 12;
-  if (y === 0) return `${mm}ヶ月`;
+  if (y === 0) return mm === 6 ? '半年' : `${mm}ヶ月`;
   if (mm === 0) return `${y}年`;
+  if (mm === 6) return `${y}年半`;
   return `${y}年${mm}ヶ月`;
 }
 

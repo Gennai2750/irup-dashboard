@@ -166,7 +166,7 @@ WEEKS_PER_MONTH  DAYS_PER_WEEK  DAYS_PER_MONTH  HOURS_PER_DAY  MONTHS_PER_YEAR
 ROLES  RoleKey
 RATE_OPTIONS  RATE_STEP  CURRENT_RATE_MAX  CURRENT_RATE_OPTIONS
 LAYERS  LayerKey  LAYER_ORDER
-SKILL_LEVELS  SkillLevel  TEACH_MULTIPLIER_BY_LAYER  TRIED_PROGRESS  REQUIRE_TEACH_BELOW_TARGET
+SKILL_LEVELS  SkillLevel  TRIED_PROGRESS  REQUIRE_TEACH_BELOW_TARGET
 SkillItem  ROLE_SKILLS  SOFT_SKILLS
 HOLIDAY_OPTIONS  DEADLINE_OPTIONS  DEADLINE_PATTERNS
 ```
@@ -190,7 +190,7 @@ hours  時間の合計を整数で
 hm     時間を「2時間13分」「30分」の形に
 ym     「2028年9月」
 monthCount  月数（1ヶ月未満は切り上げ）
-span   「2年2ヶ月」「9ヶ月」
+span   「半年」「1年半」「2年2ヶ月」「9ヶ月」
 ```
 
 ### 型の形
@@ -246,20 +246,73 @@ export type SkillItem = {
 
 落ち着いた業務資料の見た目にします。
 
-| 役割 | 指定 |
+### `app/tokens.stylex.ts` はこのとおりに作る
+
+**色とフォントは、言葉ではなく値で決めます。** ここを各自で決めると、
+計算が全部合っていても並べたときに別のアプリに見えます。**この中身をそのまま使ってください。**
+
+```ts
+import * as stylex from '@stylexjs/stylex';
+
+export const colors = stylex.defineVars({
+  // 背景・面
+  pageBg: '#f4f2ee',      // 少し温かみのある薄いグレー
+  cardBg: '#ffffff',
+  subtleBg: '#faf9f6',
+  // 文字
+  text: '#1f1f1f',        // 黒に近いグレー
+  textMuted: '#5c5a55',
+  textFaint: '#8b8880',
+  // 罫線
+  border: '#d8d4cb',
+  borderStrong: '#b9b4a9',
+  // アクセント（朱色：印章のような、少しくすんだ赤）1色のみ
+  accent: '#b23b2e',
+  accentText: '#ffffff',
+  accentWeak: '#f0dedb',
+  accentBorder: '#d8a49c',
+  // 図表の対比用
+  deepBlue: '#2f4a63',
+});
+
+export const fonts = stylex.defineVars({
+  serif: '"Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif',   // 見出し
+  sans: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", sans-serif',       // 本文
+  mono: '"Roboto Mono", "SFMono-Regular", Consolas, monospace',           // 数字
+});
+
+export const shape = stylex.defineVars({
+  radius: '3px',
+  radiusSm: '2px',
+  shadow: '0 1px 2px rgba(31, 31, 31, 0.06)',
+});
+```
+
+### フォントの読み込みは `app/layout.tsx` にこのとおり書く
+
+`next/font` は使えません（§2）。`<head>` に直接書きます。
+
+```tsx
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@500;600;700&family=Roboto+Mono:wght@400;500;700&display=swap"
+/>
+```
+
+### 使い分け
+
+| 役割 | 使うトークン |
 | --- | --- |
-| ページ背景 | 温かみのある薄いグレー |
-| カード | 白 |
-| 文字 | 黒に近いグレー（補助テキストはやや薄く） |
-| 罫線 | 薄いグレー |
-| **アクセント** | **朱色1色のみ** |
-| 見出し | 明朝体 |
-| 本文・ラベル | ゴシック体 |
-| 数字 | 等幅・桁揃え（`fontVariantNumeric: 'tabular-nums'`） |
+| 見出し | `fonts.serif` |
+| 本文・ラベル | `fonts.sans` |
+| 数字 | `fonts.mono` ＋ `fontVariantNumeric: 'tabular-nums'`（桁を揃える） |
+| アクセント | `colors.accent` **のみ**。色を増やさない |
 
-**やらないこと**：グラデーション／派手な影／大きな角丸（2〜3px まで）／アイコン・絵文字／アニメーション（ホバーの短い色変化を除く）／アクセント色を増やす。
+**やらないこと**：グラデーション／派手な影／大きな角丸（`shape.radius` より大きくしない）／アイコン・絵文字／アニメーション（ホバーの短い色変化を除く）／トークンにない色を直書きする。
 
-**幅**：中央寄せ1カラム、最大1000px程度。375px でも読めること。
+**幅**：中央寄せ1カラム、`maxWidth: '1000px'`。折り返しの境目は 640px。375px でも読めること。
 表がはみ出る場合は**表だけ**を横スクロールさせ、ページ全体を横スクロールさせない。
 
 ---

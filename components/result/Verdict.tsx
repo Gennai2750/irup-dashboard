@@ -139,7 +139,7 @@ export function Verdict({ s, d, today }: { s: FormState; d: Derived; today: Date
     return (
       <div {...stylex.props(styles.box)}>
         <p {...stylex.props(styles.head)}>
-          目標が現在の単価と同じか、それより低くなっています。ヒアリングの 07
+          目標が現在の単価と同じか、それより低くなっています。ヒアリングの 06
           で、上の単価を選んでください。
         </p>
       </div>
@@ -185,7 +185,7 @@ export function Verdict({ s, d, today }: { s: FormState; d: Derived; today: Date
             ? `空き時間のなかでやりきるなら、期限は ${span(d.minMonthsWithinFree)}後（${
                 today ? ym(targetDate(today, d.minMonthsWithinFree)) : '—'
               }）が最短です。`
-            : '空き時間がAIのキャッチアップだけで埋まってしまいます。まず空き時間を増やすところからです。'}
+            : 'まず空き時間を増やすところからです。'}
         </p>
       ) : null}
 

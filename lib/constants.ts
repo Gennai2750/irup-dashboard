@@ -141,21 +141,6 @@ export const SKILL_LEVELS = [
 export type SkillLevel = (typeof SKILL_LEVELS)[number]['value'];
 
 /**
- * 「教えられるまで」は「扱えるまで」の何倍か、のレイヤー別の目安。
- * 各項目の teachHours はこの倍率で置いた暫定値（5時間単位に丸め）。項目ごとに上書きしてよい。
- *
- * 手順どおりの作業は教えるのが比較的やさしく、運用・構築は「なぜその構成か」を
- * 説明できるまでの差が大きい。設計より上は、もともと説明そのものが仕事の中身なので差は小さい。
- */
-export const TEACH_MULTIPLIER_BY_LAYER: Record<LayerKey, number> = {
-  routine: 1.5,
-  ops: 1.8,
-  build: 1.8,
-  design: 1.5,
-  arch: 1.3,
-};
-
-/**
  * 「かじった」段階で、扱えるまでの時間の何割まで来ているとみなすか。
  * 到達時期を出すために置いた前提であり、調査データではない。画面に明示すること。
  */
